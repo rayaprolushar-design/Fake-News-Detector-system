@@ -1,0 +1,21 @@
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large data and models
+*.csv
+*.pkl
+*.npz
+*.png
+*.jpg
+*.jpeg
+*.webp
+.DS_Store
+.vscode/
