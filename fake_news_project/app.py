@@ -24,13 +24,31 @@ def load_models():
 model, tfidf = load_models()
 
 def predict(text):
+    # Guard: too short to be reliable
+    if len(text.split()) < 6:
+        return "UNCERTAIN", 0.0, "Too short — add more text for a reliable result."
+
     cleaned    = clean_text(text)
     vectorized = tfidf.transform([cleaned])
-    pred       = model.predict(vectorized)[0]
     proba      = model.predict_proba(vectorized)[0]
-    label      = "REAL" if pred == 1 else "FAKE"
-    confidence = round(max(proba) * 100, 1)
-    return label, confidence
+
+    real_prob = proba[1] * 100
+    fake_prob = proba[0] * 100
+
+    # Confidence threshold zones
+    if real_prob >= 75:
+        label, note = "REAL", "High confidence — this looks like real news."
+    elif fake_prob >= 75:
+        label, note = "FAKE", "High confidence — this shows signs of misinformation."
+    elif real_prob >= 60:
+        label, note = "LIKELY REAL", "Leaning real, but verify with a trusted source."
+    elif fake_prob >= 60:
+        label, note = "LIKELY FAKE", "Leaning fake, but check before sharing."
+    else:
+        label, note = "UNCERTAIN", "The model isn't confident — please verify manually."
+
+    confidence = round(max(real_prob, fake_prob), 1)
+    return label, confidence, note
 
 # ── Header ───────────────────────────────────────────
 st.title("🔍 Fake News Detector")
@@ -62,26 +80,27 @@ if analyse:
         st.warning("Please enter some text first!")
     else:
         with st.spinner("Analysing..."):
-            label, confidence = predict(user_input)
+            label, confidence, note = predict(user_input)
 
         st.divider()
 
-        if label == "FAKE":
-            st.error(f"### FAKE NEWS DETECTED")
-            st.markdown(f"The model is **{confidence}% confident** this is fake.")
+        # Colour the result based on verdict
+        if label == "REAL":
+            st.success(f"### ✅ {label}")
+        elif label == "FAKE":
+            st.error(f"### ❌ {label}")
+        elif label in ("LIKELY REAL", "LIKELY FAKE"):
+            st.warning(f"### ⚠️ {label}")
         else:
-            st.success(f"### LOOKS REAL")
-            st.markdown(f"The model is **{confidence}% confident** this is real.")
+            st.info(f"### ❓ {label}")
 
-        # Confidence bar
-        st.markdown("**Confidence score**")
-        st.progress(int(confidence))
+        st.markdown(note)
 
-        # Show what the model focused on
-        st.divider()
-        st.markdown("**What the model saw after cleaning:**")
-        cleaned_preview = clean_text(user_input)[:300]
-        st.code(cleaned_preview)
+        if confidence > 0:
+            st.markdown(f"**Confidence: {confidence}%**")
+            st.progress(int(confidence))
+
+        st.caption("Always verify important news with trusted sources.")
 
 # ── Footer ───────────────────────────────────────────
 st.divider()
