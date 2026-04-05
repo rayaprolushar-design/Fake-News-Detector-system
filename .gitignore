@@ -12,6 +12,8 @@ __pycache__/
 # Large data and models
 *.csv
 *.pkl
+!fake_news_project/lr_model.pkl
+!fake_news_project/tfidf_vectorizer.pkl
 *.npz
 *.png
 *.jpg
