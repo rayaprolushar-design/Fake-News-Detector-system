@@ -1,5 +1,4 @@
 import re
-import pandas as pd
 from nltk.corpus import stopwords
 import nltk
 
@@ -9,6 +8,7 @@ try:
 except LookupError:
     nltk.download('stopwords')
     STOPWORDS = set(stopwords.words('english'))
+
 
 def clean_text(text):
     """Cleans text by lowercasing, removing URLs, punctuation, and stopwords."""
@@ -28,6 +28,7 @@ def clean_text(text):
     # Step 5: rejoin into a clean string
     return ' '.join(words)
 
+
 def apply_text_cleaning(df):
     """Applies text cleaning to title and text, returning a combined column."""
     print("Cleaning text... please wait (this may take 30-60 seconds)")
@@ -36,7 +37,7 @@ def apply_text_cleaning(df):
 
     # Combine title + text for stronger signal
     df['combined'] = df['clean_title'] + ' ' + df['clean_text']
-    
+
     print("Done! Sample cleaned article:")
     print(df['combined'].iloc[0][:200])
     return df

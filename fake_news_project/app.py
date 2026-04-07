@@ -13,6 +13,8 @@ st.set_page_config(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ── Load model & vectorizer ──────────────────────────
+
+
 @st.cache_resource
 def load_models():
     with open(os.path.join(BASE_DIR, 'lr_model.pkl'), 'rb') as f:
@@ -21,16 +23,18 @@ def load_models():
         tfidf = pickle.load(f)
     return model, tfidf
 
+
 model, tfidf = load_models()
+
 
 def predict(text):
     # Guard: too short to be reliable
     if len(text.split()) < 6:
         return "UNCERTAIN", 0.0, "Too short — add more text for a reliable result."
 
-    cleaned    = clean_text(text)
+    cleaned = clean_text(text)
     vectorized = tfidf.transform([cleaned])
-    proba      = model.predict_proba(vectorized)[0]
+    proba = model.predict_proba(vectorized)[0]
 
     real_prob = proba[1] * 100
     fake_prob = proba[0] * 100
@@ -49,6 +53,7 @@ def predict(text):
 
     confidence = round(max(real_prob, fake_prob), 1)
     return label, confidence, note
+
 
 # ── Header ───────────────────────────────────────────
 st.title("🔍 Fake News Detector")
@@ -105,6 +110,6 @@ if analyse:
 # ── Footer ───────────────────────────────────────────
 st.divider()
 st.caption("""
-Built with Python · scikit-learn · Streamlit  
+Built with Python · scikit-learn · Streamlit
 Trained on 44,919 articles · 98.74% accuracy
 """)

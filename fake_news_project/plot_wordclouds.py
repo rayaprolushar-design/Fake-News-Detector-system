@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
+
 def generate_wordclouds(df, save_path='wordclouds.png'):
     """Generates and saves wordclouds for Fake and Real news articles."""
     # Combine all fake text into one big string
-    fake_text = ' '.join(df[df['label']==0]['combined'])
-    real_text = ' '.join(df[df['label']==1]['combined'])
+    fake_text = ' '.join(df[df['label'] == 0]['combined'])
+    real_text = ' '.join(df[df['label'] == 1]['combined'])
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 

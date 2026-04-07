@@ -3,6 +3,7 @@ import scipy.sparse
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+
 def prepare_and_save_features(df):
     """Splits data, builds TF-IDF, and saves matrices and models."""
     # Split into train (80%) and test (20%) BEFORE fitting TF-IDF
@@ -23,11 +24,12 @@ def prepare_and_save_features(df):
     tfidf = TfidfVectorizer(
         max_features=10000,  # use top 10,000 most useful words
         ngram_range=(1, 2),  # single words AND two-word pairs
-        min_df=5             # ignore words appearing in fewer than 5 articles
+        min_df=5,            # ignore words appearing in fewer than 5 articles
+        sublinear_tf=True    # help the model generalize to shorter headlines better
     )
 
     X_train_tfidf = tfidf.fit_transform(X_train)  # learn + transform
-    X_test_tfidf  = tfidf.transform(X_test)       # transform only (no fitting!)
+    X_test_tfidf = tfidf.transform(X_test)       # transform only (no fitting!)
 
     print(f"\nTF-IDF matrix shape: {X_train_tfidf.shape}")
     print("(rows = articles, columns = word features)")
@@ -38,9 +40,9 @@ def prepare_and_save_features(df):
 
     # Save train/test splits
     scipy.sparse.save_npz('X_train.npz', X_train_tfidf)
-    scipy.sparse.save_npz('X_test.npz',  X_test_tfidf)
+    scipy.sparse.save_npz('X_test.npz', X_test_tfidf)
     y_train.to_csv('y_train.csv', index=False)
-    y_test.to_csv('y_test.csv',  index=False)
+    y_test.to_csv('y_test.csv', index=False)
 
     print("Saved:")
     print("  tfidf_vectorizer.pkl")
