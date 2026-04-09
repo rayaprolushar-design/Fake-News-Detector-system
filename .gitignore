@@ -16,7 +16,6 @@ __pycache__/
 !fake_news_project/tfidf_vectorizer.pkl
 !fake_news_project/scaler.pkl
 !fake_news_project/rf_model.pkl
-bert_model/
 *.npz
 *.png
 *.jpg
