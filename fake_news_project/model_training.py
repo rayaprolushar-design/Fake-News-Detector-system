@@ -39,3 +39,14 @@ def train_naive_bayes(X_train, y_train, X_test, y_test):
     nb_preds = nb_model.predict(X_test)
     nb_acc = accuracy_score(y_test, nb_preds)
     return nb_model, nb_preds, nb_acc
+
+
+def train_random_forest(X_train, y_train, X_test, y_test):
+    """Trains Random Forest to analyze feature importances."""
+    from sklearn.ensemble import RandomForestClassifier
+    print("Training Random Forest (this might take a minute)...")
+    rf_model = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10)
+    rf_model.fit(X_train, y_train)
+    rf_preds = rf_model.predict(X_test)
+    rf_acc = accuracy_score(y_test, rf_preds)
+    return rf_model, rf_preds, rf_acc

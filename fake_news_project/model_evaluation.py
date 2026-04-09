@@ -18,7 +18,7 @@ def plot_confusion_matrix(y_test, preds, save_path='confusion_matrix.png'):
 
     plt.tight_layout()
     plt.savefig(save_path, dpi=150)
-    plt.show()
+    plt.close()
 
     # Read the numbers
     tn, fp, fn, tp = cm.ravel()
@@ -53,11 +53,19 @@ def plot_roc_curve(model, X_test, y_test, save_path='roc_curve.png'):
 
     plt.tight_layout()
     plt.savefig(save_path, dpi=150)
-    plt.show()
+    plt.close()
 
 
 def plot_top_words(model, tfidf, save_path='top_words.png'):
     feature_names = np.array(tfidf.get_feature_names_out())
+    # Add the 12 style features
+    style_features = [
+        'exclamation_count', 'quote_count', 'question_count', 'word_count',
+        'avg_word_length', 'all_caps_count', 'clickbait_score',
+        'sent_compound', 'sent_pos', 'sent_neu', 'sent_neg', 'digit_count'
+    ]
+    feature_names = np.concatenate([feature_names, style_features])
+    
     coefs = model.coef_[0]  # positive = real, negative = fake
 
     top_n = 15
@@ -70,16 +78,49 @@ def plot_top_words(model, tfidf, save_path='top_words.png'):
     axes[0].barh(feature_names[top_fake_idx],
                  np.abs(coefs[top_fake_idx]),
                  color='#E24B4A')
-    axes[0].set_title('Top 15 words pointing to FAKE')
+    axes[0].set_title('Top 15 words/features pointing to FAKE')
     axes[0].invert_yaxis()
 
     # Real words
     axes[1].barh(feature_names[top_real_idx],
                  coefs[top_real_idx],
                  color='#1D9E75')
-    axes[1].set_title('Top 15 words pointing to REAL')
+    axes[1].set_title('Top 15 words/features pointing to REAL')
     axes[1].invert_yaxis()
 
     plt.tight_layout()
     plt.savefig(save_path, dpi=150)
-    plt.show()
+    plt.close()
+
+
+def plot_rf_importances(model, tfidf, save_path='rf_importances.png'):
+    print("\nRanking features with Random Forest...")
+    feature_names = np.array(tfidf.get_feature_names_out())
+    style_features = [
+        'exclamation_count', 'quote_count', 'question_count', 'word_count',
+        'avg_word_length', 'all_caps_count', 'clickbait_score',
+        'sent_compound', 'sent_pos', 'sent_neu', 'sent_neg', 'digit_count'
+    ]
+    feature_names = np.concatenate([feature_names, style_features])
+    
+    importances = model.feature_importances_
+    
+    # Get top 20
+    top_n = 20
+    top_idx = importances.argsort()[-top_n:][::-1]
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.barh(feature_names[top_idx], importances[top_idx], color='#2C7BB6')
+    ax.set_title('Top 20 Features (Random Forest)')
+    ax.invert_yaxis()
+    
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=150)
+    plt.close()
+    
+    print("\n--- TOP 10 STRONGEST FEATURES ---")
+    for i, idx in enumerate(top_idx[:10]):
+        val = importances[idx]
+        name = feature_names[idx]
+        marker = "⭐" if name in ['clickbait_score', 'sent_compound'] else "  "
+        print(f"{i+1:2}. {marker} {name:<20} ({val:.4f})")

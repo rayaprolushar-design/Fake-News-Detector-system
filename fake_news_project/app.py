@@ -1,7 +1,9 @@
 import os
 import streamlit as st
 import pickle
+import scipy.sparse
 from text_processing import clean_text
+from features import extract_features
 
 # ── Page config ──────────────────────────────────────
 st.set_page_config(
@@ -21,10 +23,12 @@ def load_models():
         model = pickle.load(f)
     with open(os.path.join(BASE_DIR, 'tfidf_vectorizer.pkl'), 'rb') as f:
         tfidf = pickle.load(f)
-    return model, tfidf
+    with open(os.path.join(BASE_DIR, 'scaler.pkl'), 'rb') as f:
+        scaler = pickle.load(f)
+    return model, tfidf, scaler
 
 
-model, tfidf = load_models()
+model, tfidf, scaler = load_models()
 
 
 def predict(text):
@@ -32,9 +36,20 @@ def predict(text):
     if len(text.split()) < 6:
         return "UNCERTAIN", 0.0, "Too short — add more text for a reliable result."
 
+    # Process text for TF-IDF
     cleaned = clean_text(text)
-    vectorized = tfidf.transform([cleaned])
-    proba = model.predict_proba(vectorized)[0]
+    text_vector = tfidf.transform([cleaned])
+    
+    # Process original text for style features
+    style_df = extract_features([text])
+    style_scaled = scaler.transform(style_df)
+    style_sparse = scipy.sparse.csr_matrix(style_scaled)
+    
+    # Feature Fusion
+    fused_features = scipy.sparse.hstack([text_vector, style_sparse])
+    
+    # Predict
+    proba = model.predict_proba(fused_features)[0]
 
     real_prob = proba[1] * 100
     fake_prob = proba[0] * 100

@@ -32,5 +32,4 @@ def generate_wordclouds(df, save_path='wordclouds.png'):
 
     plt.tight_layout()
     plt.savefig(save_path, dpi=150)
-    plt.show()
     print(f"Saved {save_path}")
