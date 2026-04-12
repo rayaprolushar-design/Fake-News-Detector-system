@@ -1,4 +1,10 @@
 import os
+import sys
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.append(BASE_DIR)
+
 import csv
 import datetime
 import pandas as pd
@@ -15,6 +21,109 @@ st.set_page_config(
     page_icon="🔍",
     layout="centered"
 )
+
+# ── Premium UI Styling ───────────────────────────────
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@500;700&display=swap');
+
+/* Apply modern fonts */
+html, body, [class*="st-"] {
+    font-family: 'Inter', sans-serif;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.5px;
+}
+
+/* App Background with subtle mesh gradient */
+.stApp {
+    background-color: #0b0f19;
+    background-image: 
+        radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+        radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
+        radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
+    background-attachment: fixed;
+    color: #e2e8f0;
+}
+
+/* Glassmorphism for main content area */
+.block-container {
+    padding: 3rem 4rem 4rem 4rem !important;
+    border-radius: 20px;
+    background: rgba(15, 23, 42, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+/* Beautiful Inputs */
+.stTextArea textarea, .stTextInput input, .stFileUploader {
+    background-color: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(99, 102, 241, 0.3) !important;
+    color: #f8fafc !important;
+    border-radius: 12px !important;
+    padding: 15px !important;
+    transition: all 0.3s ease;
+}
+.stTextArea textarea:focus, .stTextInput input:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Animated Premium Buttons */
+.stButton > button {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white !important;
+    border: none !important;
+    border-radius: 12px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+.stButton > button:active {
+    transform: translateY(1px);
+}
+
+/* Custom Radio Buttons container */
+div[role="radiogroup"] {
+    background: rgba(15, 23, 42, 0.5);
+    padding: 10px 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Metrics and Alerts */
+.stAlert {
+    border-radius: 12px;
+    border: None;
+}
+
+/* Headers */
+h1 {
+    background: -webkit-linear-gradient(45deg, #6366f1, #d946ef);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+/* Progress bar modernizing */
+.stProgress > div > div > div > div {
+    background-image: linear-gradient(to right, #4f46e5, #d946ef);
+    border-radius: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(BASE_DIR, "bert_model")

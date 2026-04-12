@@ -5,9 +5,55 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 st.set_page_config(page_title="Analytics Dashboard", page_icon="📊", layout="wide")
+
+# ── Premium UI Styling ───────────────────────────────
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@500;700&display=swap');
+
+html, body, [class*="st-"] {
+    font-family: 'Inter', sans-serif;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.5px;
+}
+
+.stApp {
+    background-color: #0b0f19;
+    background-image: 
+        radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+        radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
+        radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
+    background-attachment: fixed;
+    color: #e2e8f0;
+}
+
+.stMetric {
+    background: rgba(15, 23, 42, 0.6);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.block-container {
+    padding: 3rem 4rem 4rem 4rem !important;
+}
+
+h1 {
+    background: -webkit-linear-gradient(45deg, #6366f1, #d946ef);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+</style>
+""", unsafe_allow_html=True)
+
 st.title("📊 Model Performance & Analytics Dashboard")
 
-LOG_FILE = "prediction_log.csv"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_FILE = os.path.join(BASE_DIR, "prediction_log.csv")
 
 if not os.path.exists(LOG_FILE):
     st.info("No predictions yet! Use the main app to generate some data.")
