@@ -12,9 +12,18 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
-nltk.download('punkt_tab', quiet=True)
-nltk.download('averaged_perceptron_tagger_eng', quiet=True)
-nltk.download('cmudict', quiet=True)
+for res_path, res_name in [
+    ('tokenizers/punkt_tab', 'punkt_tab'),
+    ('taggers/averaged_perceptron_tagger_eng', 'averaged_perceptron_tagger_eng'),
+    ('corpora/cmudict', 'cmudict')
+]:
+    try:
+        nltk.data.find(res_path)
+    except LookupError:
+        try:
+            nltk.download(res_name, quiet=True)
+        except Exception as e:
+            print(f"Warning: Could not download NLTK resource {res_name}: {e}")
 
 # Words AI models overuse — compiled from research papers
 # on GPT/Claude/Gemini output patterns

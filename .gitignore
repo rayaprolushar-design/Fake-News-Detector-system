@@ -23,3 +23,7 @@ __pycache__/
 *.webp
 .DS_Store
 .vscode/
+
+# Environment Variables
+.env
+
