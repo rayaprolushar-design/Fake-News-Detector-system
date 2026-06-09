@@ -42,7 +42,7 @@ def run_tests():
     print(resp)
     print("\n" + "="*50 + "\n")
 
-    # Test 5: Help Welcome message check (Empty body)
+    # Test 5: Help Welcome message check (Empty body / help word)
     print("[TEST 5] Help/Welcome Message in Hindi")
     resp = handle_message("मदद") # Triggers Hindi detection, showing Hindi welcome guide
     print("Response:")
@@ -53,6 +53,30 @@ def run_tests():
     print("[TEST 6] AI Text Detector Command (/ai)")
     ai_cmd = "/ai It is crucial to leverage comprehensive strategies that facilitate robust outcomes. Furthermore, this ensures streamlined implementation."
     resp = handle_message(ai_cmd)
+    print("Response:")
+    print(resp)
+    print("\n" + "="*50 + "\n")
+
+    # Test 7: BMW ad question (the target bug case)
+    print("[TEST 7] Brand Ad Question Filter (BMW Case)")
+    ad_question = "Is the advertisement fake or the advertisement is real"
+    resp = handle_message(ad_question)
+    print("Response:")
+    print(resp)
+    print("\n" + "="*50 + "\n")
+
+    # Test 8: Pure Advertisement Content
+    print("[TEST 8] Commercial Advertisement Block")
+    ad_content = "BMW X1 at EMI of 29999 with 5.75% ROI and road tax benefits"
+    resp = handle_message(ad_content)
+    print("Response:")
+    print(resp)
+    print("\n" + "="*50 + "\n")
+
+    # Test 9: General Non-News Question
+    print("[TEST 9] General Non-News Question Block")
+    gen_question = "What is the price of gold today?"
+    resp = handle_message(gen_question)
     print("Response:")
     print(resp)
     print("\n" + "="*50 + "\n")

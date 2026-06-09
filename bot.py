@@ -21,6 +21,7 @@ from ai_detector import detect_ai_text
 from image_detector import detect_ai_image
 from lang_detector import detect_language
 from multilingual_predictor import predict_multilingual
+from message_classifier import classify_message
 
 # Twilio Sandbox credentials (configured via .env file)
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
@@ -299,8 +300,11 @@ def handle_message(body: str, media_url: str = None, media_type: str = None) -> 
     if not body or body.lower() in help_commands:
         return formatter.fmt_help(lang)
         
-    # Minimum length validation
-    if len(body.split()) < 6:
+    # Pre-classify message type
+    classification = classify_message(body)
+    msg_type = classification['type']
+    
+    if msg_type == 'too_short':
         verdicts = {
             'english': 'UNCERTAIN',
             'hindi': 'अनिश्चित',
@@ -310,6 +314,45 @@ def handle_message(body: str, media_url: str = None, media_type: str = None) -> 
             'english': 'Text is too short (under 6 words). Please provide more context or a complete sentence for a reliable stylistic check.',
             'hindi': 'पाठ बहुत छोटा है (6 शब्दों से कम)। कृपया विश्वसनीय शैली जांच के लिए अधिक संदर्भ या पूरा वाक्य प्रदान करें।',
             'telugu': 'పాఠం చాలా చిన్నదిగా ఉంది (6 పదాల కంటే తక్కువ)। దయచేసి నమ్మదగిన శైలి తనిఖీ కోసం మరింత సమాచారం లేదా పూర్తి వాక్యాన్ని అందించండి।'
+        }
+        return formatter.format_fake_news(body, verdicts.get(lang, verdicts['english']), 0.0, notes.get(lang, notes['english']), lang=lang)
+        
+    elif msg_type == 'question_about_ad':
+        verdicts = {
+            'english': 'AD / PROMO QUERY',
+            'hindi': 'विज्ञापन प्रश्न',
+            'telugu': 'ప్రకటన ప్రశ్న'
+        }
+        notes = {
+            'english': 'This query appears to be about an advertisement or brand promotion. VerifyAI evaluates news claims rather than commercial advertisements.',
+            'hindi': 'यह प्रश्न किसी विज्ञापन या ब्रांड प्रचार के बारे में प्रतीत होता है। VerifyAI व्यावसायिक विज्ञापनों के बजाय समाचार दावों का मूल्यांकन करता है।',
+            'telugu': 'ఈ ప్రశ్న ప్రకటన లేదా బ్రాండ్ ప్రమోషన్ గురించి ఉన్నట్లు అనిపిస్తుంది। VerifyAI కేవలం వార్తలను మాత్రమే విశ్లేషిస్తుంది, వాణిజ్య ప్రకటనలను కాదు।'
+        }
+        return formatter.format_fake_news(body, verdicts.get(lang, verdicts['english']), 0.0, notes.get(lang, notes['english']), lang=lang)
+        
+    elif msg_type == 'question':
+        verdicts = {
+            'english': 'GENERAL QUESTION',
+            'hindi': 'सामान्य प्रश्न',
+            'telugu': 'సాధారణ ప్రశ్న'
+        }
+        notes = {
+            'english': 'This looks like a general question. VerifyAI is optimized to verify specific rumors and news claims. If this is a rumor, please rephrase it as a factual statement.',
+            'hindi': 'यह एक सामान्य प्रश्न लगता है। VerifyAI अफवाहों और समाचार दावों की पुष्टि के लिए अनुकूलित है। यदि यह एक अफवाह है, तो कृपया इसे एक कथन के रूप में फिर से लिखें।',
+            'telugu': 'ఇది ఒక సాధారణ ప్రశ్నలా అనిపిస్తుంది। VerifyAI నిర్దిష్ట పుకార్లు మరియు వార్తా దావాలను ధృవీకరించడానికి మాత్రమే సహాయపడుతుంది। ఇది వార్త అయితే దయచేసి దానిని ఒక ప్రకటనగా తిరిగి రాయండి।'
+        }
+        return formatter.format_fake_news(body, verdicts.get(lang, verdicts['english']), 0.0, notes.get(lang, notes['english']), lang=lang)
+        
+    elif msg_type == 'advertisement':
+        verdicts = {
+            'english': 'ADVERTISEMENT',
+            'hindi': 'विज्ञापन',
+            'telugu': 'ప్రకటన'
+        }
+        notes = {
+            'english': 'This content has been identified as promotional or marketing material. Our verification engine only evaluates news articles and social media rumors.',
+            'hindi': 'यह सामग्री विज्ञापन या प्रचार प्रतीत होती है। हमारा सत्यापन इंजन केवल समाचार लेखों और सोशल मीडिया अफवाहों का मूल्यांकन करता है।',
+            'telugu': 'ఈ కంటెంట్ ఒక ప్రకటన లేదా మార్కెటింగ్ సమాచారంగా గుర్తించబడింది। మా ధృవీకరణ వ్యవస్థ కేవలం వార్తలు మరియు పుకార్లను మాత్రమే విశ్లేషిస్తుంది।'
         }
         return formatter.format_fake_news(body, verdicts.get(lang, verdicts['english']), 0.0, notes.get(lang, notes['english']), lang=lang)
         
