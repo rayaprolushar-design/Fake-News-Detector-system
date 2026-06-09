@@ -19,3 +19,11 @@ scipy
 opencv-python-headless
 Pillow
 newspaper3k
+twilio
+fastapi
+uvicorn
+python-dotenv
+python-multipart
+langdetect
+deep-translator
+vaderSentiment
