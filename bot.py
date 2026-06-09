@@ -297,7 +297,18 @@ def handle_message(body: str, media_url: str = None, media_type: str = None) -> 
         'मदद', 'सहायता', 'जानकारी', 'मेन्यू',
         'సహాయం', 'సమాచారం', 'మెనూ'
     }
-    if not body or body.lower() in help_commands:
+    
+    if len(body) < 4:
+        if body.lower() in help_commands:
+            return formatter.fmt_help(lang)
+        quick_helps = {
+            'english': "Send me a news headline or message to check.\n\nType *help* to see all commands.",
+            'hindi': "जांचने के लिए मुझे एक समाचार शीर्षक या संदेश भेजें।\n\nसभी कमांड देखने के लिए *मदद* टाइप करें।",
+            'telugu': "తనిఖీ చేయడానికి నాకు వార్తా శీర్షిక లేదా సందేశాన్ని పంపండి।\n\nఅన్ని ఆదేశాలను చూడటానికి *సహాయం* టైప్ చేయండి।"
+        }
+        return quick_helps.get(lang, quick_helps['english'])
+
+    if body.lower() in help_commands:
         return formatter.fmt_help(lang)
         
     # Pre-classify message type
@@ -305,56 +316,36 @@ def handle_message(body: str, media_url: str = None, media_type: str = None) -> 
     msg_type = classification['type']
     
     if msg_type == 'too_short':
-        verdicts = {
-            'english': 'UNCERTAIN',
-            'hindi': 'अनिश्चित',
-            'telugu': 'అనిశ్చితం'
+        texts = {
+            'english': "ℹ️ *Too short to analyse.*\n\nPlease send a complete news headline or message — at least 6–8 words.",
+            'hindi': "ℹ️ *विश्लेषण के लिए बहुत छोटा है।*\n\nकृपया एक पूरा समाचार शीर्षक या संदेश भेजें — कम से कम 6-8 शब्द।",
+            'telugu': "ℹ️ *విశ్లేషించడానికి చాలా చిన్నదిగా ఉంది।*\n\nదయచేసి పూర్తి వార్తా శీర్షిక లేదా సందేశాన్ని పంపండి — కనీసం 6-8 పదాలు."
         }
-        notes = {
-            'english': 'Text is too short (under 6 words). Please provide more context or a complete sentence for a reliable stylistic check.',
-            'hindi': 'पाठ बहुत छोटा है (6 शब्दों से कम)। कृपया विश्वसनीय शैली जांच के लिए अधिक संदर्भ या पूरा वाक्य प्रदान करें।',
-            'telugu': 'పాఠం చాలా చిన్నదిగా ఉంది (6 పదాల కంటే తక్కువ)। దయచేసి నమ్మదగిన శైలి తనిఖీ కోసం మరింత సమాచారం లేదా పూర్తి వాక్యాన్ని అందించండి।'
-        }
-        return formatter.format_fake_news(body, verdicts.get(lang, verdicts['english']), 0.0, notes.get(lang, notes['english']), lang=lang)
+        return texts.get(lang, texts['english'])
         
     elif msg_type == 'question_about_ad':
-        verdicts = {
-            'english': 'AD / PROMO QUERY',
-            'hindi': 'विज्ञापन प्रश्न',
-            'telugu': 'ప్రకటన ప్రశ్న'
+        texts = {
+            'english': "ℹ️ *This looks like a question about an advertisement.*\n\nI'm designed to check *news claims* for misinformation — not evaluate ads or branded content.\n\nIf you want to check whether a news story is fake, send me the headline or article text.\n\nType *help* to see what I can check.",
+            'hindi': "ℹ️ *यह एक विज्ञापन के बारे में प्रश्न प्रतीत होता है।*\n\nमुझे गलत सूचनाओं के लिए *समाचार दावों* की जांच करने के लिए डिज़ाइन किया गया है — विज्ञापनों या ब्रांडेड सामग्री का मूल्यांकन करने के लिए नहीं।\n\nयदि आप जांचना चाहते हैं कि कोई *समाचार* फर्जी है या नहीं, तो मुझे शीर्षक या लेख का पाठ भेजें।\n\nक्या जांच कर सकता हूं, यह देखने के लिए *मदद* टाइप करें।",
+            'telugu': "ℹ️ *ఇది ఒక ప్రకటన గురించిన ప్రశ్నలా అనిపిస్తుంది।*\n\nనేను తప్పుడు సమాచారం కోసం *వార్తా దావాలను* తనిఖీ చేయడానికి రూపొందించబడ్డాను – ప్రకటనలు లేదా బ్రాండెడ్ కంటెంట్‌ను విశ్లేషించడానికి కాదు।\n\nవార్త నిజమో కాదో తనిఖీ చేయాలనుకుంటే, నాకు శీర్షిక లేదా వ్యాస పాఠాన్ని పంపండి।\n\nనేను ఏమి తనిఖీ చేయగలనో చూడటానికి *సహాయం* టైప్ చేయండి।"
         }
-        notes = {
-            'english': 'This query appears to be about an advertisement or brand promotion. VerifyAI evaluates news claims rather than commercial advertisements.',
-            'hindi': 'यह प्रश्न किसी विज्ञापन या ब्रांड प्रचार के बारे में प्रतीत होता है। VerifyAI व्यावसायिक विज्ञापनों के बजाय समाचार दावों का मूल्यांकन करता है।',
-            'telugu': 'ఈ ప్రశ్న ప్రకటన లేదా బ్రాండ్ ప్రమోషన్ గురించి ఉన్నట్లు అనిపిస్తుంది। VerifyAI కేవలం వార్తలను మాత్రమే విశ్లేషిస్తుంది, వాణిజ్య ప్రకటనలను కాదు।'
-        }
-        return formatter.format_fake_news(body, verdicts.get(lang, verdicts['english']), 0.0, notes.get(lang, notes['english']), lang=lang)
+        return texts.get(lang, texts['english'])
         
     elif msg_type == 'question':
-        verdicts = {
-            'english': 'GENERAL QUESTION',
-            'hindi': 'सामान्य प्रश्न',
-            'telugu': 'సాధారణ ప్రశ్న'
+        texts = {
+            'english': "ℹ️ *I can't answer general questions.*\n\nI'm built specifically to check whether a *news claim or viral message* is fake or real.\n\nSend me an actual news headline or a forwarded WhatsApp message and I'll analyse it.\n\nExample:\n_SHOCKING!! Vaccine causes side effects, doctors hiding truth!!_",
+            'hindi': "ℹ️ *मैं सामान्य प्रश्नों के उत्तर नहीं दे सकता।*\n\nमैं विशेष रूप से यह जांचने के लिए बनाया गया हूं कि कोई *समाचार दावा या वायरल संदेश* नकली है या असली।\n\nमुझे एक वास्तविक समाचार शीर्षक या फ़ॉरवर्ड किया गया व्हाट्सएप संदेश भेजें और मैं उसका विश्लेषण करूंगा।\n\nउदाहरण:\n_चौंकाने वाला!! वैक्सीन से साइड इफेक्ट होते हैं, डॉक्टर छुपा रहे हैं सच!!_",
+            'telugu': "ℹ️ *నేను సాధారణ ప్రశ్నలకు సమాధానం చెప్పలేను।*\n\nవార్తా దావా లేదా వైరల్ సందేశం నిజమో కాదో తనిఖీ చేయడానికి నేను ప్రత్యేకంగా రూపొందించబడ్డాను।\n\nనాకు అసలు వార్తా శీర్షిక లేదా ఫార్వార్డ్ చేసిన వాట్సాప్ సందేశాన్ని పంపండి మరియు నేను దానిని విశ్లేషిస్తాను।\n\nఉదాహరణ:\n_షాకింగ్!! వ్యాక్సిన్ వల్ల దుష్ప్రభావాలు కలుగుతాయి, వైద్యులు నిజాన్ని దాస్తున్నారు!!_"
         }
-        notes = {
-            'english': 'This looks like a general question. VerifyAI is optimized to verify specific rumors and news claims. If this is a rumor, please rephrase it as a factual statement.',
-            'hindi': 'यह एक सामान्य प्रश्न लगता है। VerifyAI अफवाहों और समाचार दावों की पुष्टि के लिए अनुकूलित है। यदि यह एक अफवाह है, तो कृपया इसे एक कथन के रूप में फिर से लिखें।',
-            'telugu': 'ఇది ఒక సాధారణ ప్రశ్నలా అనిపిస్తుంది। VerifyAI నిర్దిష్ట పుకార్లు మరియు వార్తా దావాలను ధృవీకరించడానికి మాత్రమే సహాయపడుతుంది। ఇది వార్త అయితే దయచేసి దానిని ఒక ప్రకటనగా తిరిగి రాయండి।'
-        }
-        return formatter.format_fake_news(body, verdicts.get(lang, verdicts['english']), 0.0, notes.get(lang, notes['english']), lang=lang)
+        return texts.get(lang, texts['english'])
         
     elif msg_type == 'advertisement':
-        verdicts = {
-            'english': 'ADVERTISEMENT',
-            'hindi': 'विज्ञापन',
-            'telugu': 'ప్రకటన'
+        texts = {
+            'english': "ℹ️ *This looks like advertisement content.*\n\nI check news and viral claims for misinformation — not commercial ads.\n\nIf you received a suspicious *news message* on WhatsApp, send that instead and I'll check it.",
+            'hindi': "ℹ️ *यह विज्ञापन सामग्री प्रतीत होती है।*\n\nमैं गलत सूचना के लिए समाचार और वायरल दावों की जांच करता हूं — व्यावसायिक विज्ञापनों की नहीं।\n\nयदि आपको व्हाट्सएप पर कोई संदिग्ध *समाचार संदेश* मिला है, तो इसके बजाय उसे भेजें और मैं उसकी जांच करूंगा।",
+            'telugu': "ℹ️ *ఇది ప్రకటన కంటెంట్‌లా అనిపిస్తుంది।*\n\nనేను తప్పుడు సమాచారం కోసం వార్తలు మరియు వైరల్ దావాలను తనిఖీ చేస్తాను — వాణిజ్య ప్రకటనలను కాదు।\n\nమీరు వాట్సాప్‌లో ఏదైనా అనుమానాస్పద *వార్తా సందేశాన్ని* అందుకుంటే, దానికి బదులుగా దానిని పంపండి మరియు నేను దానిని తనిఖీ చేస్తాను।"
         }
-        notes = {
-            'english': 'This content has been identified as promotional or marketing material. Our verification engine only evaluates news articles and social media rumors.',
-            'hindi': 'यह सामग्री विज्ञापन या प्रचार प्रतीत होती है। हमारा सत्यापन इंजन केवल समाचार लेखों और सोशल मीडिया अफवाहों का मूल्यांकन करता है।',
-            'telugu': 'ఈ కంటెంట్ ఒక ప్రకటన లేదా మార్కెటింగ్ సమాచారంగా గుర్తించబడింది। మా ధృవీకరణ వ్యవస్థ కేవలం వార్తలు మరియు పుకార్లను మాత్రమే విశ్లేషిస్తుంది।'
-        }
-        return formatter.format_fake_news(body, verdicts.get(lang, verdicts['english']), 0.0, notes.get(lang, notes['english']), lang=lang)
+        return texts.get(lang, texts['english'])
         
     try:
         res = predict_multilingual(body)
