@@ -26,4 +26,5 @@ __pycache__/
 
 # Environment Variables
 .env
+.streamlit/secrets.toml
 
