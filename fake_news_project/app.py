@@ -34,23 +34,6 @@ if 'initialized' not in st.session_state:
     st.session_state.last_result   = None
     st.session_state.analysis_count = 0
 
-# Warm up the model in the background on first load
-# so first prediction is instant instead of slow
-@st.cache_resource
-def warmup_model():
-    mdl, tok, device = load_bert_models()
-    if mdl is not None and tok is not None:
-        import torch
-        # Run a dummy prediction to load weights into memory
-        inputs = tok("warmup", return_tensors='pt',
-                     truncation=True, max_length=10, padding=True)
-        inputs = {k: v.to(device) for k, v in inputs.items()}
-        with torch.no_grad():
-            _ = mdl(**inputs)
-    return "ready"
-
-warmup_status = warmup_model()  # runs once, cached forever
-
 # ── Premium UI Styling (Updated Ultra-premium targeted CSS) ──
 st.markdown("""
 <style>
@@ -460,6 +443,23 @@ def load_bert_models():
 
 # Load lightweight models on start (takes <50ms)
 sk_models = load_sklearn_models()
+
+# Warm up the model in the background on first load
+# so first prediction is instant instead of slow
+@st.cache_resource
+def warmup_model():
+    mdl, tok, device = load_bert_models()
+    if mdl is not None and tok is not None:
+        import torch
+        # Run a dummy prediction to load weights into memory
+        inputs = tok("warmup", return_tensors='pt',
+                     truncation=True, max_length=10, padding=True)
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        with torch.no_grad():
+            _ = mdl(**inputs)
+    return "ready"
+
+warmup_status = warmup_model()  # runs once, cached forever
 
 # ── Logging Setup ───────────────────────────────────
 def log_prediction(input_text, label, confidence, model_used):
