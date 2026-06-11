@@ -19,6 +19,7 @@ from ai_detector import detect_ai_text
 from rewrite_guide import get_rewrite_tips
 from image_detector import detect_ai_image
 from query_search import search_google_news
+from factcheck_api import check_google_factcheck, render_factcheck_results
 
 # ── Page config ──────────────────────────────────────
 st.set_page_config(
@@ -503,6 +504,10 @@ def _show_result(label, confidence, note, raw_text, model_name):
         st.progress(int(confidence))
         
     st.caption("Always verify important news with trusted sources.")
+    
+    # Check Google Fact Check API for human reviewed checks
+    factcheck_results = check_google_factcheck(raw_text[:200])
+    render_factcheck_results(factcheck_results)
     
     # Logging and Feedback mechanism
     if "current_log_id" not in st.session_state or st.session_state.get('last_text') != raw_text:
