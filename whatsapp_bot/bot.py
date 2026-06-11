@@ -8,11 +8,7 @@ import io
 from urllib.parse import urlparse
 from PIL import Image
 
-# Add project folder to sys.path to allow internal imports
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.join(BASE_DIR, "fake_news_project")
-if PROJECT_DIR not in sys.path:
-    sys.path.insert(0, PROJECT_DIR)
 
 from text_processing import clean_text
 from features import extract_features
@@ -64,10 +60,10 @@ SOURCE_CREDIBILITY = {
 }
 
 def load_sklearn_models():
-    lr_path = os.path.join(PROJECT_DIR, 'lr_model.pkl')
-    rf_path = os.path.join(PROJECT_DIR, 'rf_model.pkl')
-    tfidf_path = os.path.join(PROJECT_DIR, 'tfidf_vectorizer.pkl')
-    scaler_path = os.path.join(PROJECT_DIR, 'scaler.pkl')
+    lr_path = os.path.join(BASE_DIR, 'lr_model.pkl')
+    rf_path = os.path.join(BASE_DIR, 'rf_model.pkl')
+    tfidf_path = os.path.join(BASE_DIR, 'tfidf_vectorizer.pkl')
+    scaler_path = os.path.join(BASE_DIR, 'scaler.pkl')
     
     models = {}
     try:
@@ -100,7 +96,7 @@ def get_bert_model():
     """Lazily load the DistilBERT model to save startup memory if it is not requested."""
     global BERT_MODEL, BERT_TOKENIZER, BERT_DEVICE
     
-    model_dir = os.path.join(PROJECT_DIR, "bert_model")
+    model_dir = os.path.join(BASE_DIR, "bert_model")
     if not os.path.exists(model_dir):
         return None, None, None
         

@@ -13,13 +13,8 @@ from deep_translator import GoogleTranslator
 
 # Configure paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_DIR = os.path.join(BASE_DIR, "fake_news_project")
-BERT_DIR = os.path.join(PROJECT_DIR, "bert_model")
+BERT_DIR = os.path.join(BASE_DIR, "bert_model")
 INDIC_DIR = os.path.join(BASE_DIR, "indic_model")
-
-# Make sure project imports work
-if PROJECT_DIR not in sys.path:
-    sys.path.insert(0, PROJECT_DIR)
 
 # Lazy load models
 _english_tok   = None
