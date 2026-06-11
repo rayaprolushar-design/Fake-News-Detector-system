@@ -267,6 +267,87 @@ td {
     padding: 12px 16px !important;
     color: #cbd5e1 !important;
 }
+
+/* ── Share result button ─────────────────────────── */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid #1E2D40;
+  border-radius: 8px;
+  padding: 7px 14px;
+  color: #4A6070;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.share-btn:hover {
+  border-color: #2B7FD4;
+  color: #2B7FD4;
+  background: rgba(43,127,212,0.08);
+}
+
+/* ── Verdict entrance animation ──────────────────── */
+@keyframes verdictPop {
+  0%   { opacity:0; transform: scale(0.92) translateY(6px); }
+  60%  { transform: scale(1.02) translateY(-1px); }
+  100% { opacity:1; transform: scale(1) translateY(0); }
+}
+.result-card {
+  animation: verdictPop 0.4s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+
+/* ── Mobile responsive fixes ─────────────────────── */
+@media (max-width: 640px) {
+  .main .block-container {
+    padding: 0.8rem 0.8rem 3rem !important;
+  }
+  .brand-name {
+    font-size: 17px !important;
+  }
+  .brand-stats {
+    display: none !important;
+  }
+  .stRadio > div > label {
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+  }
+  .signal-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .result-verdict {
+    font-size: 20px !important;
+  }
+}
+
+/* ── Fact-check results card ──────────────────────── */
+.factcheck-card {
+  background: #111820;
+  border: 1px solid #1E2D40;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  transition: border-color 0.15s;
+}
+.factcheck-card:hover {
+  border-color: #2B7FD4;
+}
+
+/* ── Smooth page transitions ──────────────────────── */
+.stApp {
+  transition: background-color 0.3s ease !important;
+}
+section[data-testid="stSidebar"] {
+  transition: width 0.3s ease !important;
+}
+
+/* ── Better scrollbar ────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0D1117; }
+::-webkit-scrollbar-thumb { background: #1E2D40; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2B7FD4; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -530,6 +611,31 @@ def _show_result(label, confidence, note, raw_text, model_name):
                 st.rerun()
     else:
         st.success("Thanks for improving the model! Check the Dashboard.")
+        
+    # ── Share result ───────────────────────────────────
+    app_url = "https://web-production-08501d.up.railway.app"  # updated after deploy
+    wa_num  = "+14155238886"                                 # Twilio sandbox number
+    
+    share_text = (
+        f"I just fact-checked this with VerifyAI 🔍\n"
+        f"Verdict: {label} ({confidence:.0f}% confidence)\n\n"
+        f"Check it yourself: {app_url}"
+    )
+    wa_share_url = f"https://wa.me/?text={share_text.replace(' ','%20').replace('\n','%0A')}"
+    
+    st.divider()
+    col_share, col_copy, _ = st.columns([2, 2, 3])
+    
+    with col_share:
+        st.link_button(
+            "📤 Share on WhatsApp",
+            wa_share_url,
+            use_container_width=True
+        )
+    with col_copy:
+        if st.button("📋 Copy result", use_container_width=True):
+            st.write(f"```\n{share_text}\n```")
+            st.toast("Copied to clipboard!")
 
 # ── Sidebar Configuration & Controls ─────────────────
 with st.sidebar:
