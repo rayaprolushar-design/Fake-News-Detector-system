@@ -11,6 +11,10 @@ if STREAMLIT_APP_DIR not in sys.path:
 os.chdir(STREAMLIT_APP_DIR)
 
 # Execute the actual app logic
-with open(os.path.join(STREAMLIT_APP_DIR, "app.py"), "r", encoding="utf-8") as f:
+actual_app_path = os.path.join(STREAMLIT_APP_DIR, "app.py")
+with open(actual_app_path, "r", encoding="utf-8") as f:
     code = f.read()
-    exec(code, globals())
+    # Override __file__ so app.py resolves its own BASE_DIR correctly to streamlit_app/
+    globals_dict = globals()
+    globals_dict["__file__"] = actual_app_path
+    exec(code, globals_dict)
