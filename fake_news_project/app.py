@@ -27,6 +27,29 @@ st.set_page_config(
     layout="centered"
 )
 
+# Prevents Streamlit from rerunning when user types
+if 'initialized' not in st.session_state:
+    st.session_state.initialized   = True
+    st.session_state.last_result   = None
+    st.session_state.analysis_count = 0
+
+# Warm up the model in the background on first load
+# so first prediction is instant instead of slow
+@st.cache_resource
+def warmup_model():
+    mdl, tok, device = load_bert_models()
+    if mdl is not None and tok is not None:
+        import torch
+        # Run a dummy prediction to load weights into memory
+        inputs = tok("warmup", return_tensors='pt',
+                     truncation=True, max_length=10, padding=True)
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        with torch.no_grad():
+            _ = mdl(**inputs)
+    return "ready"
+
+warmup_status = warmup_model()  # runs once, cached forever
+
 # ── Premium UI Styling (Updated Ultra-premium targeted CSS) ──
 st.markdown("""
 <style>
@@ -571,8 +594,26 @@ if mode == "📝 Paste text":
         if not user_input.strip():
             st.warning("Please enter some text first!")
         else:
-            with st.spinner("Analyzing semantic and syntactic patterns..."):
+            with st.spinner(""):
+                placeholder = st.empty()
+                placeholder.markdown("""
+                <div style="background:rgba(255,255,255,0.05);border-radius:12px;
+                            padding:20px;animation:pulse 1.5s infinite;">
+                  <div style="height:24px;background:#1A2535;border-radius:6px;
+                              width:40%;margin-bottom:12px;"></div>
+                  <div style="height:14px;background:#1A2535;border-radius:4px;
+                              width:80%;margin-bottom:8px;"></div>
+                  <div style="height:8px;background:#1A2535;border-radius:4px;
+                              width:100%;"></div>
+                </div>
+                <style>
+                @keyframes pulse {
+                  0%,100% { opacity:1; } 50% { opacity:0.5; }
+                }
+                </style>
+                """, unsafe_allow_html=True)
                 label, conf, note = predict_single(user_input, selected_model)
+                placeholder.empty()  # remove skeleton when done
             _show_result(label, conf, note, user_input, selected_model)
 
 elif mode == "🔗 Paste URL":

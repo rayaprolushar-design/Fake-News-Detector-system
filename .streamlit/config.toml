@@ -1,0 +1,21 @@
+[server]
+maxUploadSize = 10
+enableCORS = false
+enableXsrfProtection = false
+headless = true
+
+[browser]
+gatherUsageStats = false
+serverAddress = "localhost"
+
+[theme]
+base = "dark"
+primaryColor = "#2B7FD4"
+backgroundColor = "#0D1117"
+secondaryBackgroundColor = "#111820"
+textColor = "#A8BCCF"
+font = "sans serif"
+
+[runner]
+fastReruns = true
+magicEnabled = false
