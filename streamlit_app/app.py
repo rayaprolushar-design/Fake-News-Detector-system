@@ -572,6 +572,20 @@ def run_batch_prediction_sklearn(texts: list, model, tfidf, scaler) -> pd.DataFr
     df_res = pd.DataFrame(results)
     return pd.concat([df_out, df_res], axis=1)
 
+def get_app_url() -> str:
+    """
+    Returns the real public URL when deployed,
+    or a friendly message when running locally.
+    """
+    # Streamlit Cloud sets this environment variable automatically
+    streamlit_url = os.getenv('STREAMLIT_SERVER_URL', '')
+    if streamlit_url and 'localhost' not in streamlit_url:
+        return streamlit_url
+
+    # Manually set your deployed URL here once you have it
+    deployed_url = "https://srikar-verifyai.streamlit.app"  # ← update this
+    return deployed_url
+
 def _show_result(label, confidence, note, raw_text, model_name):
     st.divider()
     if label == "REAL": st.success(f"### ✅ {label}")
@@ -613,29 +627,30 @@ def _show_result(label, confidence, note, raw_text, model_name):
         st.success("Thanks for improving the model! Check the Dashboard.")
         
     # ── Share result ───────────────────────────────────
-    app_url = "https://web-production-08501d.up.railway.app"  # updated after deploy
-    wa_num  = "+14155238886"                                 # Twilio sandbox number
+    app_url = get_app_url()
+    wa_num  = os.getenv('TWILIO_WHATSAPP_FROM', '+14155238886').replace('whatsapp:','')
     
     share_text = (
         f"I just fact-checked this with VerifyAI 🔍\n"
-        f"Verdict: {label} ({confidence:.0f}% confidence)\n\n"
-        f"Check it yourself: {app_url}"
+        f"Verdict: *{label}* ({confidence:.0f}% confidence)\n\n"
+        f"Try it yourself:\n"
+        f"🌐 Web: {app_url}\n"
+        f"💬 WhatsApp: https://wa.me/{wa_num.replace('+','')}"
     )
-    wa_share_url = f"https://wa.me/?text={share_text.replace(' ','%20').replace('\n','%0A')}"
+    
+    # WhatsApp share URL — properly encoded
+    from urllib.parse import quote
+    wa_share_url = f"https://wa.me/?text={quote(share_text)}"
     
     st.divider()
     col_share, col_copy, _ = st.columns([2, 2, 3])
-    
     with col_share:
-        st.link_button(
-            "📤 Share on WhatsApp",
-            wa_share_url,
-            use_container_width=True
-        )
+        st.link_button("📤 Share on WhatsApp", wa_share_url,
+                       use_container_width=True)
     with col_copy:
         if st.button("📋 Copy result", use_container_width=True):
-            st.write(f"```\n{share_text}\n```")
-            st.toast("Copied to clipboard!")
+            st.code(share_text)
+            st.toast("✅ Copied!")
 
 # ── Sidebar Configuration & Controls ─────────────────
 with st.sidebar:

@@ -33,10 +33,11 @@ def format_divider() -> str:
     return "━━━━━━━━━━━━━━━━━━━━"
 
 def format_footer(lang: str = 'english') -> str:
+    APP_URL = "https://srikar-verifyai.streamlit.app"
     footers = {
-        'english': '\n━━━━━━━━━━━━━━━━━━━━\n🔍 *VerifyAI Bot*\nVerify before you share!',
-        'hindi': '\n━━━━━━━━━━━━━━━━━━━━\n🔍 *VerifyAI बॉट*\nसाझा करने से पहले जांचें!',
-        'telugu': '\n━━━━━━━━━━━━━━━━━━━━\n🔍 *VerifyAI బాట్*\nషేర్ చేయడానికి ముందు ధృవీకరించండి!'
+        'english': f'\n━━━━━━━━━━━━━━━━━━━━\n🔍 *VerifyAI Bot*\nAlso try the web app:\n_{APP_URL}_',
+        'hindi': f'\n━━━━━━━━━━━━━━━━━━━━\n🔍 *VerifyAI बॉट*\nवेब ऐप भी आज़माएं:\n_{APP_URL}_',
+        'telugu': f'\n━━━━━━━━━━━━━━━━━━━━\n🔍 *VerifyAI బాట్*\nవెబ్ యాప్‌ని కూడా ప్రయత్నించండి:\n_{APP_URL}_'
     }
     return footers.get(lang, footers['english'])
 
