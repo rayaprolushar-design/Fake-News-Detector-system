@@ -3,8 +3,14 @@ from fastapi import FastAPI, Form, Response
 from fastapi.responses import HTMLResponse
 from dotenv import load_dotenv
 
+import sys
 # Load environment variables first
 load_dotenv()
+
+# Add script directory to sys.path to allow absolute/relative imports when running from root
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 from bot import handle_message
 

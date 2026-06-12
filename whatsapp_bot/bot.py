@@ -9,6 +9,8 @@ from urllib.parse import urlparse
 from PIL import Image
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 from text_processing import clean_text
 from features import extract_features
