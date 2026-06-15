@@ -19,4 +19,9 @@ echo "Opening public tunnel. Keeping Mac awake using 'caffeinate'..."
 echo "Press Ctrl+C to stop the bot and shutdown the server."
 echo "-----------------------------------------"
 
-caffeinate -i npx -y localtunnel --port 8000
+while true; do
+    echo "Connecting to public tunnel..."
+    caffeinate -i ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=no -R 80:localhost:8000 nokey@localhost.run
+    echo "Tunnel disconnected. Reconnecting in 5 seconds..."
+    sleep 5
+done

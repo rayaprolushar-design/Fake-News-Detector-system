@@ -1,13 +1,5 @@
-# multilingual_predictor.py
-# Smart router — English → DistilBERT, Hindi/Telugu → IndicBERT (with translation fallback)
-
 import os
 import sys
-import torch
-from transformers import (
-    DistilBertTokenizerFast, DistilBertForSequenceClassification,
-    AutoTokenizer, AutoModelForSequenceClassification
-)
 from lang_detector import detect_language
 from deep_translator import GoogleTranslator
 
@@ -16,17 +8,40 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BERT_DIR = os.path.join(BASE_DIR, "bert_model")
 INDIC_DIR = os.path.join(BASE_DIR, "indic_model")
 
-# Lazy load models
+# Lazy load models & modules
+torch = None
+DistilBertTokenizerFast = None
+DistilBertForSequenceClassification = None
+AutoTokenizer = None
+AutoModelForSequenceClassification = None
+
 _english_tok   = None
 _english_model = None
 _indic_tok     = None
 _indic_model   = None
 _indic_available = None
 
+def _import_dependencies():
+    global torch, DistilBertTokenizerFast, DistilBertForSequenceClassification, AutoTokenizer, AutoModelForSequenceClassification
+    if torch is None:
+        if os.getenv("LOW_MEMORY", "").lower() == "true":
+            raise ImportError("LOW_MEMORY mode enabled. Skipping heavy model imports.")
+        import torch as t
+        from transformers import (
+            DistilBertTokenizerFast as dbtf, DistilBertForSequenceClassification as dbfsc,
+            AutoTokenizer as at, AutoModelForSequenceClassification as amfsc
+        )
+        torch = t
+        DistilBertTokenizerFast = dbtf
+        DistilBertForSequenceClassification = dbfsc
+        AutoTokenizer = at
+        AutoModelForSequenceClassification = amfsc
+
 def _get_english_model():
     global _english_tok, _english_model
     if _english_tok is None:
         try:
+            _import_dependencies()
             _english_tok   = DistilBertTokenizerFast.from_pretrained(BERT_DIR, local_files_only=True)
             _english_model = DistilBertForSequenceClassification.from_pretrained(BERT_DIR, local_files_only=True)
             _english_model.eval()
@@ -39,6 +54,7 @@ def _get_indic_model():
     if _indic_available is None:
         if os.path.exists(INDIC_DIR):
             try:
+                _import_dependencies()
                 _indic_tok   = AutoTokenizer.from_pretrained(INDIC_DIR, local_files_only=True)
                 _indic_model = AutoModelForSequenceClassification.from_pretrained(INDIC_DIR, local_files_only=True)
                 _indic_model.eval()
