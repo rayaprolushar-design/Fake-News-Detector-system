@@ -1,5 +1,26 @@
 import re
 
+APP_URL  = "https://srikar-verifyai.streamlit.app"   # your real URL
+BOT_WA   = "14155238886"                              # your Twilio number, digits only
+
+def fmt_share_message() -> str:
+    """
+    Returns a ready-to-forward message that users can long-press
+    and tap Forward on, straight to their groups and contacts.
+    """
+    return f"""🔍 *Spread the word!*
+━━━━━━━━━━━━━━━━━━━━
+Forward this message to friends & family groups:
+
+_"Hey! Found this WhatsApp bot that checks if news is fake in 5 seconds. Works in Hindi, Telugu & English too. Just forward any suspicious message to it:_
+_wa.me/{BOT_WA}_
+
+_Built by a student — pretty cool!"_
+
+🌐 Web app: {APP_URL}
+━━━━━━━━━━━━━━━━━━━━
+_Tap and hold the message above → Forward_"""
+
 def clean_markdown_for_whatsapp(text: str) -> str:
     """
     Cleans general markdown to make it WhatsApp-compatible:
@@ -33,7 +54,6 @@ def format_divider() -> str:
     return "━━━━━━━━━━━━━━━━━━━━"
 
 def format_footer(lang: str = 'english') -> str:
-    APP_URL = "https://srikar-verifyai.streamlit.app"
     footers = {
         'english': f'\n━━━━━━━━━━━━━━━━━━━━\n🔍 *VerifyAI Bot*\nAlso try the web app:\n_{APP_URL}_',
         'hindi': f'\n━━━━━━━━━━━━━━━━━━━━\n🔍 *VerifyAI बॉट*\nवेब ऐप भी आज़माएं:\n_{APP_URL}_',

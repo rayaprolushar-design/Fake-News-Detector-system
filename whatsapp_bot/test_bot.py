@@ -81,5 +81,12 @@ def run_tests():
     print(resp)
     print("\n" + "="*50 + "\n")
 
+    # Test 10: /share command
+    print("[TEST 10] Share/Invite Command (/share)")
+    resp = handle_message("/share")
+    print("Response:")
+    print(resp)
+    print("\n" + "="*50 + "\n")
+
 if __name__ == "__main__":
     run_tests()

@@ -212,6 +212,10 @@ def handle_message(body: str, media_url: str = None, media_type: str = None) -> 
     body = (body or "").strip()
     import formatter
     
+    # ── Share Command ──
+    if body.lower() in ('/share', 'share', 'invite', '/invite'):
+        return formatter.fmt_share_message()
+        
     # ── 1. Image Detector Dispatcher ────────────────────────────────
     if media_url and media_type and media_type.startswith("image/"):
         try:
