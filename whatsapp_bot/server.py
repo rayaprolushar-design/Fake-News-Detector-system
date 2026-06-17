@@ -45,17 +45,24 @@ async def webhook(
     Body: str = Form(None),
     MediaUrl0: str = Form(None),
     ContentType0: str = Form(None),
-    From: str = Form(None)
+    From: str = Form(None),
+    NumMedia: int = Form(0)
 ):
     # Parse inputs
     message_body = Body or ""
     media_url = MediaUrl0 or None
     media_type = ContentType0 or None
     
-    print(f"Received webhook: From={From}, Body='{message_body}', MediaUrl={media_url}, Type={media_type}")
+    print(f"Received webhook: From={From}, Body='{message_body}', MediaUrl={media_url}, Type={media_type}, NumMedia={NumMedia}")
     
     try:
-        reply_text = handle_message(message_body, media_url, media_type)
+        reply_text = handle_message(
+            body=message_body,
+            media_url=media_url,
+            media_type=media_type,
+            num_media=NumMedia,
+            from_number=From or ""
+        )
     except Exception as e:
         reply_text = f"❌ *Server Webhook Error:* {str(e)}"
         print(f"Error handling message: {e}")

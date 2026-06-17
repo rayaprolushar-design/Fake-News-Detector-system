@@ -5,8 +5,26 @@ import scipy.sparse
 import requests
 import re
 import io
+import csv
+from datetime import datetime
 from urllib.parse import urlparse
 from PIL import Image
+
+USAGE_LOG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'usage_log.csv')
+
+def log_usage(phone_number: str, message_type: str):
+    """Log every message for growth tracking. Phone is hashed for privacy."""
+    import hashlib
+    # Hash the number so we don't store raw phone numbers
+    phone_number = phone_number or "unknown"
+    hashed = hashlib.sha256(phone_number.encode()).hexdigest()[:12]
+
+    exists = os.path.exists(USAGE_LOG)
+    with open(USAGE_LOG, 'a', newline='') as f:
+        w = csv.writer(f)
+        if not exists:
+            w.writerow(['timestamp', 'user_hash', 'message_type'])
+        w.writerow([datetime.now().isoformat(), hashed, message_type])
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
@@ -200,7 +218,8 @@ def download_twilio_media(media_url: str) -> bytes:
     resp.raise_for_status()
     return resp.content
 
-def handle_message(body: str, media_url: str = None, media_type: str = None) -> str:
+def handle_message(body: str, media_url: str = None, media_type: str = None,
+                   num_media: int = 0, from_number: str = '') -> str:
     """
     Main routing function for the WhatsApp bot.
     Dispatches:
@@ -211,6 +230,15 @@ def handle_message(body: str, media_url: str = None, media_type: str = None) -> 
     """
     body = (body or "").strip()
     import formatter
+
+    # Log this interaction
+    log_msg_type = (
+        'image' if num_media > 0 or (media_url and media_type and media_type.startswith("image/")) else
+        'share_command' if body.lower() in ('/share', 'share', 'invite', '/invite') else
+        'url' if 'http' in body.lower() else
+        'text'
+    )
+    log_usage(from_number, log_msg_type)
     
     # ── Share Command ──
     if body.lower() in ('/share', 'share', 'invite', '/invite'):
