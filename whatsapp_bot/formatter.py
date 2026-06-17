@@ -50,8 +50,21 @@ def clean_markdown_for_whatsapp(text: str) -> str:
         
     return '\n'.join(cleaned_lines)
 
+DIVIDER = "━━━━━━━━━━━━━━━━━━━━"
+
 def format_divider() -> str:
-    return "━━━━━━━━━━━━━━━━━━━━"
+    return DIVIDER
+
+def _footer(extra_tip: str = "") -> list:
+    """Shared footer used by every reply — keeps branding consistent."""
+    lines = ["", DIVIDER]
+    if extra_tip:
+        lines.append(extra_tip)
+    lines += [
+        f"_VerifyAI · {APP_URL}_",
+        "_Type /share to spread the word_"
+    ]
+    return lines
 
 def format_footer(lang: str = 'english') -> str:
     footers = {
@@ -62,8 +75,8 @@ def format_footer(lang: str = 'english') -> str:
     return footers.get(lang, footers['english'])
 
 HELP_MESSAGES = {
-    'english': """🔍 *Welcome to VerifyAI!*
-━━━━━━━━━━━━━━━━━━━━
+    'english': f"""🔍 *Welcome to VerifyAI!*
+{DIVIDER}
 I help you verify the authenticity of news and media.
 
 *What I can analyze:*
@@ -72,11 +85,11 @@ I help you verify the authenticity of news and media.
 🖼️ Send an *image* to check if it's AI-generated.
 🤖 Type `/ai <text>` to verify if a text is AI-written.
 
-━━━━━━━━━━━━━━━━━━━━
+{DIVIDER}
 _VerifyAI · Always verify with trusted sources_""",
 
-    'hindi': """🔍 *VerifyAI में आपका स्वागत है!*
-━━━━━━━━━━━━━━━━━━━━
+    'hindi': f"""🔍 *VerifyAI में आपका स्वागत है!*
+{DIVIDER}
 मैं आपको खबरों की सत्यता जांचने में मदद करता हूं।
 
 *मैं क्या जांच सकता हूं:*
@@ -85,11 +98,11 @@ _VerifyAI · Always verify with trusted sources_""",
 🖼️ कोई *फोटो* भेजें — AI जेनरेटेड है या असली?
 🤖 */ai <टेक्स्ट>* — AI ने लिखा है या इंसान ने?
 
-━━━━━━━━━━━━━━━━━━━━
+{DIVIDER}
 _VerifyAI · हमेशा विश्वसनीय स्रोतों से जांचें_""",
 
-    'telugu': """🔍 *VerifyAI కి స్వాగతం!*
-━━━━━━━━━━━━━━━━━━━━
+    'telugu': f"""🔍 *VerifyAI కి స్వాగతం!*
+{DIVIDER}
 నేను వార్తల నిజాయితీని తనిఖీ చేయడంలో మీకు సహాయం చేస్తాను।
 
 *నేను ఏమి తనిఖీ చేయగలను:*
@@ -98,7 +111,7 @@ _VerifyAI · हमेशा विश्वसनीय स्रोतों �
 🖼️ *ఫోటో* పంపండి — AI జెనరేటెడ్ అా లేదా నిజమైనదా?
 🤖 */ai <టెక్స్ట్>* — AI రాసిందా లేదా మానవుడు రాశాడా?
 
-━━━━━━━━━━━━━━━━━━━━
+{DIVIDER}
 _VerifyAI · నమ్మదగిన మూలాలతో ఎల్లప్పుడూ ధృవీకరించండి_"""
 }
 
@@ -108,7 +121,7 @@ def fmt_help(lang: str = 'english') -> str:
         return HELP_MESSAGES[lang]
     return HELP_MESSAGES['english']
 
-def format_fake_news(headline: str, label_native: str, confidence: float, note: str, lang: str = 'english') -> str:
+def fmt_news_result(headline: str, label_native: str, confidence: float, note: str, lang: str = 'english') -> str:
     """Formats news prediction output for WhatsApp in native languages."""
     headers = {
         'english': '🚨 *FAKE NEWS ANALYSIS*',
@@ -146,17 +159,20 @@ def format_fake_news(headline: str, label_native: str, confidence: float, note: 
     conf_lbl = confidences.get(lang, confidences['english'])
     analysis_lbl = analyses.get(lang, analyses['english'])
     
-    body = (
-        f"{header}\n"
-        f"{format_divider()}\n"
-        f"*{claim_lbl}:* \"_{headline.strip()}_\"\n\n"
-        f"*{verdict_lbl}:* *{label_native}*\n"
-        f"*{conf_lbl}:* *{confidence}%*\n\n"
+    lines = [
+        header,
+        DIVIDER,
+        f"*{claim_lbl}:* \"_{headline.strip()}_\"",
+        "",
+        f"*{verdict_lbl}:* *{label_native}*",
+        f"*{conf_lbl}:* *{confidence}%*",
+        "",
         f"*{analysis_lbl}:* {note}"
-    )
-    return body + format_footer(lang)
+    ]
+    lines += _footer()
+    return "\n".join(lines)
 
-def format_ai_text(text: str, result: dict) -> str:
+def fmt_ai_text_result(text: str, result: dict) -> str:
     """Formats AI vs Human text output for WhatsApp."""
     verdict_emoji = "🤖" if "AI" in result['verdict'] else "✅"
     verdict = f"{verdict_emoji} *{result['verdict']}*"
@@ -171,21 +187,25 @@ def format_ai_text(text: str, result: dict) -> str:
     )
     
     flagged = ", ".join([f"`{w}`" for w in result['flagged_words']]) if result['flagged_words'] else "_None_"
-    
     excerpt = text.strip()[:100] + ("..." if len(text.strip()) > 100 else "")
     
-    body = (
-        f"🤖 *AI TEXT ANALYSIS*\n"
-        f"{format_divider()}\n"
-        f"*Text Excerpt:* \"_{excerpt}_\"\n\n"
-        f"*Verdict:* {verdict}\n"
-        f"*AI Probability:* *{result['ai_score']}%*\n\n"
-        f"*Linguistic Signals:*\n{signals_str}\n\n"
+    lines = [
+        "🤖 *AI TEXT ANALYSIS*",
+        DIVIDER,
+        f"*Text Excerpt:* \"_{excerpt}_\"",
+        "",
+        f"*Verdict:* {verdict}",
+        f"*AI Probability:* *{result['ai_score']}%*",
+        "",
+        f"*Linguistic Signals:*",
+        signals_str,
+        "",
         f"*AI-Overused Words:* {flagged}"
-    )
-    return body + format_footer('english')
+    ]
+    lines += _footer()
+    return "\n".join(lines)
 
-def format_ai_image(result: dict) -> str:
+def fmt_image_result(result: dict) -> str:
     """Formats AI Image detection output for WhatsApp."""
     verdict_emoji = "🤖" if "AI" in result['verdict'] else "📷"
     verdict = f"{verdict_emoji} *{result['verdict']}*"
@@ -204,19 +224,23 @@ def format_ai_image(result: dict) -> str:
     else:
         meta_str = "• *Camera EXIF:* _Not Found_ (typical of AI/web images)"
         
-    body = (
-        f"🖼️ *AI IMAGE ANALYSIS*\n"
-        f"{format_divider()}\n"
-        f"*Verdict:* {verdict}\n"
-        f"*AI Probability:* *{result['ai_score']}%*\n\n"
-        f"*Visual Signals:*\n{signals_str}\n\n"
-        f"*Metadata:*\n{meta_str}"
-    )
-    return body + format_footer('english')
+    lines = [
+        "🖼️ *AI IMAGE ANALYSIS*",
+        DIVIDER,
+        f"*Verdict:* {verdict}",
+        f"*AI Probability:* *{result['ai_score']}%*",
+        "",
+        f"*Visual Signals:*",
+        signals_str,
+        "",
+        f"*Metadata:*",
+        meta_str
+    ]
+    lines += _footer()
+    return "\n".join(lines)
 
-def format_url_analysis(url: str, title: str, domain: str, credibility: dict, label: str, confidence: float, note: str) -> str:
+def fmt_url_result(url: str, title: str, domain: str, credibility: dict, label: str, confidence: float, note: str) -> str:
     """Formats combined URL credibility and content analysis."""
-    # Source Credibility
     cred_rating = credibility.get('rating', 'UNKNOWN')
     cred_emoji = "🟢" if cred_rating == "TRUSTED" else "🔴" if cred_rating == "QUESTIONABLE" else "🟡"
     cred_score = credibility.get('score', 'N/A')
@@ -227,18 +251,34 @@ def format_url_analysis(url: str, title: str, domain: str, credibility: dict, la
         f"• *Score:* *{cred_score}/100*"
     )
     
-    # Content analysis
     content_emoji = "✅" if "REAL" in label else "❌" if "FAKE" in label else "⚠️"
     content_verdict = f"{content_emoji} *{label}*"
     
-    body = (
-        f"🌐 *URL & ARTICLE ANALYSIS*\n"
-        f"{format_divider()}\n"
-        f"*Article Title:* \"_{title.strip()}_\"\n\n"
-        f"*Source Credibility:*\n{cred_str}\n\n"
-        f"*Content Analysis:*\n"
-        f"• *Verdict:* {content_verdict}\n"
-        f"• *Confidence:* *{confidence}%*\n"
+    lines = [
+        "🌐 *URL & ARTICLE ANALYSIS*",
+        DIVIDER,
+        f"*Article Title:* \"_{title.strip()}_\"",
+        "",
+        f"*Source Credibility:*",
+        cred_str,
+        "",
+        f"*Content Analysis:*",
+        f"• *Verdict:* {content_verdict}",
+        f"• *Confidence:* *{confidence}%*",
         f"• *Detail:* {note}"
-    )
-    return body + format_footer('english')
+    ]
+    lines += _footer()
+    return "\n".join(lines)
+
+# Legacy aliases for backward compatibility
+def format_fake_news(*args, **kwargs) -> str:
+    return fmt_news_result(*args, **kwargs)
+
+def format_ai_text(*args, **kwargs) -> str:
+    return fmt_ai_text_result(*args, **kwargs)
+
+def format_ai_image(*args, **kwargs) -> str:
+    return fmt_image_result(*args, **kwargs)
+
+def format_url_analysis(*args, **kwargs) -> str:
+    return fmt_url_result(*args, **kwargs)
