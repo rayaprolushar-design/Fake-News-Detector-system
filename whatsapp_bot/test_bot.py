@@ -88,5 +88,12 @@ def run_tests():
     print(resp)
     print("\n" + "="*50 + "\n")
 
+    # Test 11: /trends command
+    print("[TEST 11] Trends Command (/trends)")
+    resp = handle_message("/trends")
+    print("Response:")
+    print(resp)
+    print("\n" + "="*50 + "\n")
+
 if __name__ == "__main__":
     run_tests()

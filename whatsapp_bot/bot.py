@@ -30,6 +30,25 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
+ANALYSIS_LOG = os.path.join(BASE_DIR, 'analysis_log.csv')
+
+def log_analysis(text: str, verdict: str, confidence: float,
+                  language: str, msg_type: str):
+    """Logs each analysis for daily reporting and trend tracking."""
+    import hashlib
+    exists = os.path.exists(ANALYSIS_LOG)
+    with open(ANALYSIS_LOG, 'a', newline='') as f:
+        w = csv.writer(f)
+        if not exists:
+            w.writerow(['timestamp', 'text_hash', 'text_preview',
+                          'verdict', 'confidence', 'language', 'msg_type'])
+        w.writerow([
+            datetime.now().isoformat(),
+            hashlib.md5(text.encode()).hexdigest()[:8],
+            text[:60].replace('\n', ' '),
+            verdict, round(confidence, 1), language, msg_type
+        ])
+
 from text_processing import clean_text
 from features import extract_features
 from url_scraper import scrape_article
@@ -244,6 +263,11 @@ def handle_message(body: str, media_url: str = None, media_type: str = None,
     if body.lower() in ('/share', 'share', 'invite', '/invite'):
         return formatter.fmt_share_message()
         
+    # ── Trends/Stats Command ──
+    if body.lower() in ('/trends', 'trends', '/stats'):
+        from trend_tracker import fmt_trends_message
+        return fmt_trends_message()
+        
     # ── 1. Image Detector Dispatcher ────────────────────────────────
     if media_url and media_type and media_type.startswith("image/"):
         try:
@@ -379,12 +403,30 @@ def handle_message(body: str, media_url: str = None, media_type: str = None,
         
     try:
         res = predict_multilingual(body)
-        return formatter.format_fake_news(
+        
+        # Log this analysis for trend tracking
+        log_analysis(
+            text       = body[:200],
+            verdict    = res['label'],
+            confidence = res['confidence'],
+            language   = res['language'],
+            msg_type   = 'text'
+        )
+        
+        reply = formatter.format_fake_news(
             body, 
             res['label_native'], 
             res['confidence'], 
             res['note'], 
             lang=res['language']
         )
+        
+        # Check PIB Fact Check
+        from pib_checker import check_pib, fmt_pib_result
+        pib_results = check_pib(body)
+        if pib_results:
+            reply += fmt_pib_result(pib_results)
+            
+        return reply
     except Exception as e:
         return f"❌ *Error analyzing text:* {str(e)}"

@@ -10,7 +10,7 @@ echo "========================================="
 # 1. Start the FastAPI server in the background
 echo "Starting server process..."
 cd "$(dirname "$0")"
-../.venv/bin/uvicorn server:app --host 0.0.0.0 --port 8000 &
+/Users/srikarrayaprolu/.venv_fakenews/bin/uvicorn server:app --host 0.0.0.0 --port 8000 < /dev/null &
 SERVER_PID=$!
 echo "FastAPI Server started (PID: $SERVER_PID)"
 
