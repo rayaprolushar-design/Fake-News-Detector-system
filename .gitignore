@@ -16,6 +16,10 @@ __pycache__/
 !fake_news_project/tfidf_vectorizer.pkl
 !fake_news_project/scaler.pkl
 !fake_news_project/rf_model.pkl
+!whatsapp_bot/lr_model.pkl
+!whatsapp_bot/tfidf_vectorizer.pkl
+!whatsapp_bot/scaler.pkl
+!whatsapp_bot/rf_model.pkl
 *.npz
 *.png
 *.jpg
